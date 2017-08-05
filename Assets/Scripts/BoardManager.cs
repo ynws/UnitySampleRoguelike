@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using Random = UnityEngine.Random;
 using UnityEngine;
 
+/// <summary>
+/// ゲームフィールドを管理するためのクラス
+/// </summary>
 public class BoardManager : MonoBehaviour {
 
     [Serializable]
@@ -19,10 +22,16 @@ public class BoardManager : MonoBehaviour {
         }
     }
 
+    // フィールドサイズ。一応可変だけど、カメラが対応していない。
     public int columns = 8;
     public int rows = 8;
+
+    // ゲームフィールド内に配置される壁とアイテムの数範囲。
+    // フィールド内を埋め尽くすとかは考慮していない
     public Count wallCount = new Count(5, 9);
     public Count foodCount = new Count(1, 5);
+
+    // フィールドタイル
     public GameObject exit;
     public GameObject[] floorTiles;
     public GameObject[] wallTiles;
@@ -30,9 +39,15 @@ public class BoardManager : MonoBehaviour {
     public GameObject[] enemyTiles;
     public GameObject[] outerWallTiles;
 
+    // フィールドを保持しておくための要素
     private Transform boardHolder;
+
+    // フィールド上のタイルを設置した場所を管理するリスト
     private List<Vector3> gridPositions = new List<Vector3>();
 
+    /// <summary>
+    /// タイル管理リストの初期化
+    /// </summary>
     void InitializeList()
     {
         gridPositions.Clear();
@@ -73,7 +88,7 @@ public class BoardManager : MonoBehaviour {
     /// <summary>
     /// Unit/Itemの配置用位置返却関数。
     /// gridPositionsのリストから空いている場所を取得して返す。
-    /// gridPositionsが空いてないときはどうするつもりなのだろうか
+    /// gridPositionsが空いてないときバグる。
     /// </summary>
     /// <returns></returns>
     Vector3 RandomPosition()
@@ -85,7 +100,7 @@ public class BoardManager : MonoBehaviour {
     }
 
     /// <summary>
-    /// 引数に指定されたタイル群を、ボード上のランダムな位置に配置する。
+    /// 引数に指定されたタイル群のランダムなタイルを、ボード上のランダムな位置に配置する。
     /// </summary>
     /// <param name="tileArray"></param>
     /// <param name="min"></param>

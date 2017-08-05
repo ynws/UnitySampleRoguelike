@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// カメラに張り付けてマネージャをロードするためのローダー
+/// ゲームマネージャをロードするためのローダークラス。
+/// カメラに張り付けて使う。
 /// </summary>
 public class Loader : MonoBehaviour {
 

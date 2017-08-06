@@ -1,22 +1,41 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// ゲーム全体の要素管理を行うシングルトンのクラス。
 /// </summary>
 public class GameManager : MonoBehaviour {
 
-    public float turnDelay = 0.1f;
     public static GameManager instance = null;
+
+    // 各種遷移にかかる時間
+    public float levelStartDelay = 2f;
+    public float turnDelay = 0.1f;
+
     public BoardManager boardScript;
+
     public int playerFoodPoint = 100;
     [HideInInspector] public bool playerTurn = true;
 
-    // 初期ゲームレベル。デバック用に敵が出てくるレベルを初期レベルにしている。リリース時には1に。
-    private int level = 3;
+    private bool doingSetup;
+
+    private int level = 1;
+    private Text levelText;
+    private GameObject levelImage;
+
     private List<Enemy> enemies;
     private bool enemiesMoving;
+
+    /// <summary>
+    /// シーンが切り替わるごとに呼ばれる関数
+    /// </summary>
+    private void OnLevelWasLoaded(int index)
+    {
+        level++;
+        InitGame();
+    }
 
 	// Use this for initialization
 	void Awake () {
@@ -39,7 +58,7 @@ public class GameManager : MonoBehaviour {
 
     void Update()
     {
-        if(playerTurn || enemiesMoving)
+        if(playerTurn || enemiesMoving || doingSetup)
         {
             return;
         }
@@ -54,13 +73,28 @@ public class GameManager : MonoBehaviour {
 
     public void GameOver()
     {
+        levelText.text = "After " + level + " days, you starved.";
+        levelImage.SetActive(true);
         enabled = false;
     }
 
     void InitGame()
     {
+        doingSetup = true;
+        levelImage = GameObject.Find("LevelImage");
+        levelText = GameObject.Find("LevelText").GetComponent<Text>();
+        levelText.text = "Day " + level;
+        levelImage.SetActive(true);
+        Invoke("HideLevelImage", levelStartDelay);
+
         enemies.Clear();
         boardScript.SetupScene(level);
+    }
+
+    private void HideLevelImage()
+    {
+        levelImage.SetActive(false);
+        doingSetup = false;
     }
 
     IEnumerator MoveEnemies()

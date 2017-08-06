@@ -23,6 +23,8 @@ public class Player : MovingObject {
     private Animator animator;
     private int food;
 
+    private Vector2 touchOrigin = -Vector2.one;
+
     // Use this for initialization
     protected override void Start () {
         animator = GetComponent<Animator>();
@@ -35,25 +37,54 @@ public class Player : MovingObject {
     {
         GameManager.instance.playerFoodPoint = food;
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update()
+    {
         // Playerのターンでなければ以下の処理不要
         if (!GameManager.instance.playerTurn) return;
 
         // ユーザ入力を受け取る
-        int horizontal = (int)(Input.GetAxisRaw("Horizontal"));
-        int vertical = (int)(Input.GetAxisRaw("Vertical"));
-
+        int horizontal = 0;
+        int vertical = 0;
+#if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WEBPLAYER
+        // PCなど、カーソルキーがある場合の入力処理
+        horizontal = (int)(Input.GetAxisRaw("Horizontal"));
+        vertical = (int)(Input.GetAxisRaw("Vertical"));
         // 斜め移動不可
         if (horizontal != 0) vertical = 0;
+#else
+        // スマホなど、キー入力できない場合、スワイプで操作
+        if (Input.touchCount > 0)
+        {
+            Touch myTouch = Input.touches[0];
+            if (myTouch.phase == TouchPhase.Began)
+            {
+                // タッチ開始位置を記録
+                touchOrigin = myTouch.position;
+            }
+            else if (myTouch.phase == TouchPhase.Ended && touchOrigin.x >= 0)
+            {
+                // タッチ終了かつ、開始位置が設定済みなら、移動処理。
+                Vector2 touchEnd = myTouch.position;
+                float x = touchEnd.x - touchOrigin.x;
+                float y = touchEnd.y - touchOrigin.y;
+                touchOrigin.x = -1;
+                // X, Yのうち、よりスワイプされているほうに進む
+                if (Mathf.Abs(x) > Mathf.Abs(y))
+                    horizontal = x > 0 ? 1 : -1;
+                else
+                    vertical = y > 0 ? 1 : -1;
+            }
+        }
+#endif
 
-        if(horizontal!=0 || vertical != 0)
+        if (horizontal != 0 || vertical != 0)
         {
             // 移動先に壁を想定しておく
             AttemptMove<Wall>(horizontal, vertical);
         }
-	}
+    }
 
     protected override void AttemptMove<T> (int xDir, int yDir)
     {
